@@ -1,3 +1,5 @@
+from ingestion.extract_media import get_media
+
 def test_media_id_exists():
 
     media = get_media()
