@@ -1,8 +1,19 @@
 def test_media_id_exists():
-    assert True
+
+    media = get_media()
+
+    assert "media_id" in media
+
 
 def test_media_title_exists():
-    assert True
+
+    media = get_media()
+
+    assert "title" in media
+
 
 def test_records_returned():
-    assert True
+
+    media = get_media()
+
+    assert media is not None
