@@ -41,12 +41,18 @@ def save_metrics_to_csv(stats, media_id, file_path="engagement_metrics.csv"):
         "visitors": stats.get("visitors")
     }
 
-    fieldnames = row.keys()
+    file_exists = os.path.exists(file_path)
 
-    with open(file_path, mode="w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
+    with open(file_path, mode="a", newline="") as file:
+
+        writer = csv.DictWriter(file, fieldnames=row.keys())
+
+        # Write header only on first creation
+        if not file_exists:
+            writer.writeheader()
+
         writer.writerow(row)
+
 
 
 
