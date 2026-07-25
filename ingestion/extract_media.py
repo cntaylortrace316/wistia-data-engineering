@@ -2,9 +2,11 @@ import requests
 import urllib3
 import os
 import csv
+import json
 from datetime import datetime
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 
 def get_media_stats(media_id, api_token):
@@ -47,7 +49,41 @@ def save_metrics_to_csv(stats, media_id, file_path="engagement_metrics.csv"):
         writer.writerow(row)
 
 
+
+def get_last_run(file_path="last_run.json"):
+    """
+    Read last pipeline execution timestamp.
+    """
+
+    try:
+        with open(file_path, "r") as file:
+            data = json.load(file)
+            return data["last_run"]
+
+    except FileNotFoundError:
+        return None
+
+
+def update_last_run(file_path="last_run.json"):
+    """
+    Save current execution timestamp.
+    """
+
+    data = {
+        "last_run": datetime.now().isoformat()
+    }
+
+    with open(file_path, "w") as file:
+        json.dump(data, file, indent=4)
+
+
+
+
 if __name__ == "__main__":
+
+    last_run = get_last_run()
+
+    print(f"Last Run: {last_run}")
 
     API_TOKEN = os.getenv("WISTIA_API_TOKEN")
     MEDIA_ID = "v08dlrgr7v"
@@ -59,4 +95,9 @@ if __name__ == "__main__":
 
     save_metrics_to_csv(stats, MEDIA_ID)
 
+
     print("Metrics saved to engagement_metrics.csv")
+
+    update_last_run()
+
+    print("Updated last_run.json")
