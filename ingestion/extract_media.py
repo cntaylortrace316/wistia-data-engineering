@@ -1,2 +1,5 @@
 def get_media():
-    return {"status": "success"}
+    return {
+        "media_id": "8hunphufxp",
+        "title": "Sample Video"
+    }
