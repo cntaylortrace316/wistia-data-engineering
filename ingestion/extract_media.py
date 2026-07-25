@@ -1,19 +1,13 @@
 import requests
 import urllib3
 import os
-
-API_TOKEN = os.getenv("WISTIA_API_TOKEN")
+import csv
+from datetime import datetime
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def get_media_stats(media_id, api_token):
-    """
-    Retrieve Wistia media statistics.
-
-    Returns:
-        dict: Media statistics from Wistia API.
-    """
 
     url = f"https://api.wistia.com/v1/stats/medias/{media_id}.json"
 
@@ -24,7 +18,7 @@ def get_media_stats(media_id, api_token):
     response = requests.get(
         url,
         headers=headers,
-        verify=False  # Remove later
+        verify=False
     )
 
     response.raise_for_status()
@@ -32,7 +26,29 @@ def get_media_stats(media_id, api_token):
     return response.json()
 
 
+def save_metrics_to_csv(stats, media_id, file_path="engagement_metrics.csv"):
+
+    row = {
+        "extracted_at": datetime.now().isoformat(),
+        "media_id": media_id,
+        "load_count": stats.get("load_count"),
+        "play_count": stats.get("play_count"),
+        "play_rate": stats.get("play_rate"),
+        "hours_watched": stats.get("hours_watched"),
+        "engagement": stats.get("engagement"),
+        "visitors": stats.get("visitors")
+    }
+
+    fieldnames = row.keys()
+
+    with open(file_path, mode="w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow(row)
+
+
 if __name__ == "__main__":
+
     API_TOKEN = os.getenv("WISTIA_API_TOKEN")
     MEDIA_ID = "v08dlrgr7v"
 
@@ -40,7 +56,7 @@ if __name__ == "__main__":
 
     print(f"Loads: {stats['load_count']:,}")
     print(f"Plays: {stats['play_count']:,}")
-    print(f"Play Rate: {stats['play_rate']:.2%}")
-    print(f"Hours Watched: {stats['hours_watched']:,.2f}")
-    print(f"Engagement: {stats['engagement']:.2%}")
-    print(f"Visitors: {stats['visitors']:,}")
+
+    save_metrics_to_csv(stats, MEDIA_ID)
+
+    print("Metrics saved to engagement_metrics.csv")
