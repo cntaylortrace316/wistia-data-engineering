@@ -24,19 +24,51 @@ def get_media_stats(media_id, api_token):
 
 # WISTIA MEDIA LIST API
 def get_media_list(api_token):
-    url = "https://api.wistia.com/modern/medias"
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "accept": "application/json",
-        "X-Wistia-API-Version": "2026-05"
-    }
-    response = requests.get(
-        url,
-        headers=headers,
-        verify=False
-    )
-    response.raise_for_status()
-    return response.json()
+
+    all_media = []
+
+    page = 1
+    per_page = 100
+
+    while True:
+
+        url = "https://api.wistia.com/modern/medias"
+
+        headers = {
+            "Authorization": f"Bearer {api_token}",
+            "accept": "application/json",
+            "X-Wistia-API-Version": "2026-05"
+        }
+
+        params = {
+            "page": page,
+            "per_page": per_page
+        }
+
+        response = requests.get(
+            url,
+            headers=headers,
+            params=params,
+            verify=False
+        )
+
+        response.raise_for_status()
+
+        media_page = response.json()
+
+        print(f"Page {page}: {len(media_page)} records")
+
+        if len(media_page) == 0:
+            break
+
+        all_media.extend(media_page)
+
+        if len(media_page) < per_page:
+            break
+
+        page += 1
+
+    return all_media
 
 # ENGAGEMENT METRICS CSV
 
