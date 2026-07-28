@@ -227,13 +227,13 @@ def get_visitor_list(api_token):
             break
 
         # Stop after page 5 for testing
-        # if page >= 5:
-        #     print("Stopping after 5 pages for testing")
-        #     break
+        if page >= 5:
+            print("Stopping after 5 pages for testing")
+            break
 
         page += 1
 
-    
+    print(f"Retrieved {len(all_visitors)} visitors")
     return all_visitors   
   
 def save_visitor_data(
