@@ -2,3 +2,4 @@ requests
 pandas
 pyspark
 pytest
+urllib3
