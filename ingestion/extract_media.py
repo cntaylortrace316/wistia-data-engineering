@@ -179,7 +179,139 @@ def update_last_run(file_path="last_run.json"):
     with open(file_path, "w") as file:
         json.dump(data, file, indent=4)
         
-# MAIN TEST
+def get_visitor_list(api_token):
+
+    all_visitors = []
+
+    page = 1
+    per_page = 100
+
+    while True:
+
+        url = "https://api.wistia.com/modern/stats/visitors"
+
+        headers = {
+            "Authorization": f"Bearer {api_token}",
+            "accept": "application/json",
+            "X-Wistia-API-Version": "2026-05"
+        }
+
+        params = {
+            "page": page,
+            "per_page": per_page
+        }
+
+        response = requests.get(
+            url,
+            headers=headers,
+            params=params,
+            verify=False
+        )
+
+        response.raise_for_status()
+
+        visitor_page = response.json()
+
+        print(f"Page {page}: {len(visitor_page)} visitors")
+
+        if len(visitor_page) == 0:
+            break
+
+        all_visitors.extend(visitor_page)
+
+        print(f"Total visitors collected: {len(all_visitors)}")
+        print(f"Current page variable: {page}")
+
+        if len(visitor_page) < per_page:
+            break
+
+        # Stop after page 5 for testing
+        if page >= 5:
+            print("Stopping after 5 pages for testing")
+            break
+
+        page += 1
+
+    return all_visitors   
+  
+def save_visitor_data(
+        visitor_list,
+        file_path="visitor_data.csv"):
+    """
+    Save visitor-level data.
+    """
+
+    fieldnames = [
+        "extracted_at",
+        "visitor_key",
+        "created_at",
+        "last_active_at",
+        "last_event_key",
+        "load_count",
+        "play_count",
+        "visitor_name",
+        "visitor_email",
+        "org_name",
+        "org_title",
+        "browser",
+        "browser_version",
+        "platform",
+        "mobile"
+    ]
+
+    with open(
+            file_path,
+            mode="w",
+            newline="",
+            encoding="utf-8") as file:
+
+        writer = csv.DictWriter(
+            file,
+            fieldnames=fieldnames
+        )
+
+        writer.writeheader()
+
+        for visitor in visitor_list:
+
+            identity = visitor.get(
+                "visitor_identity", {}
+            )
+
+            org = identity.get(
+                "org", {}
+            )
+
+            user_agent = visitor.get(
+                "user_agent_details", {}
+            )
+
+            row = {
+                "extracted_at": datetime.now().isoformat(),
+                "visitor_key": visitor.get("visitor_key"),
+                "created_at": visitor.get("created_at"),
+                "last_active_at": visitor.get("last_active_at"),
+                "last_event_key": visitor.get("last_event_key"),
+                "load_count": visitor.get("load_count"),
+                "play_count": visitor.get("play_count"),
+
+                "visitor_name": identity.get("name"),
+                "visitor_email": identity.get("email"),
+
+                "org_name": org.get("name"),
+                "org_title": org.get("title"),
+
+                "browser": user_agent.get("browser"),
+                "browser_version": user_agent.get("browser_version"),
+                "platform": user_agent.get("platform"),
+                "mobile": user_agent.get("mobile")
+            }
+
+            writer.writerow(row)
+
+    return len(visitor_list)  
+        
+# MAIN SECTION
 
 if __name__ == "__main__":
     last_run = get_last_run()
@@ -208,17 +340,26 @@ if __name__ == "__main__":
         media_list
     )
 
-
-    print(
-        f"Updated media_metadata.csv "
-        f"({records_saved} new/updated records)"
-    )
-
     print(
         f"Updated media_metadata.csv "
         f"({records_saved} records)"
     )
-    
+
+# VISITOR DATA
+
+    visitor_list = get_visitor_list(
+        API_TOKEN
+    )
+
+    records_saved = save_visitor_data(
+        visitor_list
+    )
+
+    print(
+        f"Updated visitor_data.csv "
+        f"({records_saved} records)"
+    )
+        
     # STORE LAST RUN
     update_last_run()
 
