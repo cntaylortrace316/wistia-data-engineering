@@ -1,0 +1,14 @@
+# Generated data files
+engagement_metrics.csv
+media_metadata.csv
+last_run.json
+
+# Python
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# Environment files
+.env
