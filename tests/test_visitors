@@ -1,0 +1,50 @@
+import requests
+import urllib3
+import os
+import json
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+API_TOKEN = os.getenv("WISTIA_API_TOKEN")
+
+page = 1
+per_page = 100
+
+url = "https://api.wistia.com/modern/stats/visitors"
+
+headers = {
+    "Authorization": f"Bearer {API_TOKEN}",
+    "accept": "application/json",
+    "X-Wistia-API-Version": "2026-05"
+}
+
+while True:
+
+    params = {
+        "page": page,
+        "per_page": per_page
+    }
+
+    response = requests.get(
+        url,
+        headers=headers,
+        params=params,
+        verify=False
+    )
+
+    response.raise_for_status()
+
+    visitors = response.json()
+
+    print(f"Page {page}: {len(visitors)} visitors")
+
+    if page == 5:
+        print("Stopping after 5 pages for testing")
+        break
+
+    if len(visitors) < per_page:
+        break
+
+    page += 1
+
+    
