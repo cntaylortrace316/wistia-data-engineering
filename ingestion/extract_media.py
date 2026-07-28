@@ -106,8 +106,9 @@ def save_media_metadata(
         media_list,
         file_path="media_metadata.csv"):
     """
-    Save Wistia media metadata.
+    Save Wistia media metadata snapshot.
     """
+
     fieldnames = [
         "extracted_at",
         "media_id",
@@ -123,6 +124,7 @@ def save_media_metadata(
         "folder_hashed_id",
         "folder_name"
     ]
+
     with open(
             file_path,
             mode="w",
@@ -133,9 +135,13 @@ def save_media_metadata(
             file,
             fieldnames=fieldnames
         )
+
         writer.writeheader()
+
         for media in media_list:
+
             folder = media.get("folder", {})
+
             row = {
                 "extracted_at": datetime.now().isoformat(),
                 "media_id": media.get("id"),
@@ -151,7 +157,10 @@ def save_media_metadata(
                 "folder_hashed_id": folder.get("hashed_id"),
                 "folder_name": folder.get("name")
             }
+
             writer.writerow(row)
+
+    return len(media_list)
             
 # INCREMENTAL INGESTION
 
@@ -195,12 +204,19 @@ if __name__ == "__main__":
     media_list = get_media_list(
         API_TOKEN
     )
-    save_media_metadata(
+    records_saved = save_media_metadata(
         media_list
     )
+
+
     print(
         f"Updated media_metadata.csv "
-        f"({len(media_list)} records)"
+        f"({records_saved} new/updated records)"
+    )
+
+    print(
+        f"Updated media_metadata.csv "
+        f"({records_saved} records)"
     )
     
     # STORE LAST RUN
