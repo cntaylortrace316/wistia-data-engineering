@@ -177,8 +177,8 @@ def update_last_run(file_path="last_run.json"):
         "last_run": datetime.now().isoformat()
     }
     with open(file_path, "w") as file:
-        json.dump(data, file, indent=4)
-        
+        json.dump(data, file, indent=4) 
+     
 def get_visitor_list(api_token):
 
     all_visitors = []
@@ -212,15 +212,16 @@ def get_visitor_list(api_token):
 
         visitor_page = response.json()
 
-        print(f"Page {page}: {len(visitor_page)} visitors")
+        #print(f"Page {page}: {len(visitor_page)} visitors")
 
         if len(visitor_page) == 0:
             break
 
         all_visitors.extend(visitor_page)
 
-        print(f"Total visitors collected: {len(all_visitors)}")
-        print(f"Current page variable: {page}")
+        #print(f"Total visitors collected: {len(all_visitors)}")
+        #print(f"Current page variable: {page}")
+        
 
         if len(visitor_page) < per_page:
             break
@@ -232,13 +233,15 @@ def get_visitor_list(api_token):
 
         page += 1
 
+    print(f"Retrieved {len(all_visitors)} visitors")
     return all_visitors   
   
 def save_visitor_data(
         visitor_list,
+        last_run,
         file_path="visitor_data.csv"):
     """
-    Save visitor-level data.
+    Save only new visitors since last run.
     """
 
     fieldnames = [
@@ -259,9 +262,13 @@ def save_visitor_data(
         "mobile"
     ]
 
+    file_exists = os.path.exists(file_path)
+
+    records_saved = 0
+
     with open(
             file_path,
-            mode="w",
+            mode="a",
             newline="",
             encoding="utf-8") as file:
 
@@ -270,9 +277,17 @@ def save_visitor_data(
             fieldnames=fieldnames
         )
 
-        writer.writeheader()
+        if not file_exists:
+            writer.writeheader()
 
         for visitor in visitor_list:
+
+            visitor_created = visitor.get("created_at")
+
+            # Skip visitors that already existed before last run
+            if last_run is not None:
+                if visitor_created <= last_run:
+                    continue
 
             identity = visitor.get(
                 "visitor_identity", {}
@@ -309,7 +324,9 @@ def save_visitor_data(
 
             writer.writerow(row)
 
-    return len(visitor_list)  
+            records_saved += 1
+
+    return records_saved
         
 # MAIN SECTION
 
@@ -352,7 +369,8 @@ if __name__ == "__main__":
     )
 
     records_saved = save_visitor_data(
-        visitor_list
+        visitor_list,
+        last_run
     )
 
     print(
