@@ -75,7 +75,7 @@ def get_media_list(api_token):
 def save_metrics_to_csv(
         stats,
         media_id,
-        file_path="engagement_metrics.csv"):
+        file_path="data/engagement_metrics.csv"):
     row = {
         "extracted_at": datetime.now().isoformat(),
         "media_id": media_id,
@@ -104,7 +104,7 @@ def save_metrics_to_csv(
 
 def save_media_metadata(
         media_list,
-        file_path="media_metadata.csv"):
+        file_path="data/media_metadata.csv"):
     """
     Save Wistia media metadata snapshot.
     """
@@ -164,7 +164,7 @@ def save_media_metadata(
             
 # INCREMENTAL INGESTION
 
-def get_last_run(file_path="last_run.json"):
+def get_last_run(file_path="data/last_run.json"):
     try:
         with open(file_path, "r") as file:
             data = json.load(file)
@@ -172,7 +172,7 @@ def get_last_run(file_path="last_run.json"):
     except FileNotFoundError:
         return None
         
-def update_last_run(file_path="last_run.json"):
+def update_last_run(file_path="data/last_run.json"):
     data = {
         "last_run": datetime.now().isoformat()
     }
@@ -239,7 +239,7 @@ def get_visitor_list(api_token):
 def save_visitor_data(
         visitor_list,
         last_run,
-        file_path="visitor_data.csv"):
+        file_path="data/visitor_data.csv"):
     """
     Save only new visitors since last run.
     """
