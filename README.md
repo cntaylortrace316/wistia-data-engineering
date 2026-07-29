@@ -16,12 +16,34 @@ The pipeline is designed to:
 
 ---
 
+## Workflow Diagram
+
+```text
+Wistia API
+    ↓
+Python ETL
+    ↓
+Pagination Logic
+    ↓
+Incremental Processing
+    ↓
+CSV Storage
+    ↓
+GitHub Actions
+    ↓
+Scheduled Execution
+    ↓
+Repository Persistence
+```
+
+---
+
 ## Architecture
 
 ### Wistia API
 
 - Media Metadata Endpoint
-- Media Stat Endpoint
+- Media Stats Endpoint
 - Visitor Endpoint
 
 ### Python ETL Pipeline
@@ -49,7 +71,7 @@ The pipeline is designed to:
 
 **Endpoint**
 
-- GET /modern/medias
+- `GET /modern/medias`
 
 **Purpose**
 
@@ -65,7 +87,7 @@ The pipeline is designed to:
 
 **Endpoint**
 
-- GET /v1/stats/medias/{media_id}.json
+- `GET /v1/stats/medias/{media_id}.json`
 
 **Purpose**
 
@@ -80,7 +102,7 @@ The pipeline is designed to:
 
 **Endpoint**
 
-- GET /modern/stats/visitors
+- `GET /modern/stats/visitors`
 
 **Purpose**
 
@@ -203,6 +225,9 @@ GitHub Actions is used to automate execution.
 - Automated execution
 - Environment variable management
 - Secret management
+- Automated scheduling
+- Persistent state management
+- Automated data versioning
 
 ---
 
@@ -229,6 +254,12 @@ os.getenv("WISTIA_API_TOKEN")
 └── workflows/
     └── pipeline.yml
 
+data/
+├── engagement_metrics.csv
+├── media_metadata.csv
+├── visitor_data.csv
+└── last_run.json
+
 ingestion/
 └── extract_media.py
 
@@ -240,6 +271,35 @@ README.md
 requirements.txt
 .gitignore
 ```
+
+---
+
+## State Persistence
+
+To support incremental processing across multiple executions, pipeline state is stored inside the repository.
+
+Files persisted between runs:
+
+- data/last_run.json
+- data/visitor_data.csv
+- data/engagement_metrics.csv
+
+GitHub Actions automatically commits updated files back to the repository after each successful execution.
+
+This allows scheduled executions to continue processing new data without requiring external storage.
+
+---
+
+## Technologies Used
+
+- Python
+- Requests
+- CSV
+- JSON
+- REST APIs
+- GitHub
+- GitHub Actions
+- Wistia API
 
 ---
 
